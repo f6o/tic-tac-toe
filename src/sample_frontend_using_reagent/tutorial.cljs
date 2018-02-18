@@ -3,7 +3,10 @@
       [reagent.core :as r]))
 
 (defn square [n]
-  [:button.square {:value n} (str n)])
+  [:button.square
+   {:value n
+    :on-click #((js/alert "hello"))}
+   (str n)])
 
 (defn board-row [start]
   [:div.board-row
