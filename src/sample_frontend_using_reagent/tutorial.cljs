@@ -3,7 +3,7 @@
       [reagent.core :as r]))
 
 (defn square [n]
-  [:button.square (str n)])
+  [:button.square {:value n} (str n)])
 
 (defn board-row [start]
   [:div.board-row
