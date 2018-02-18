@@ -3,10 +3,12 @@
       [reagent.core :as r]))
 
 (defn square [n]
-  [:button.square
-   {:value n
-    :on-click #((js/alert "hello"))}
-   (str n)])
+  (let [state (r/atom {:value "O"})]
+    [:button.square
+     {:value n
+      :on-click (fn [e]
+                  (swap! state assoc :value "X"))}
+     (str (:value @state))]))
 
 (defn board-row [start]
   [:div.board-row
