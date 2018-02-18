@@ -2,20 +2,21 @@
     (:require
       [reagent.core :as r]))
 
-(defn square [n]
-  (let [state (r/atom {:value "O"})]
-    [:button.square
-     {:value n
-      :on-click (fn [e]
-                  (swap! state assoc :value "X"))}
-     (str (:value @state))]))
+(defn square [n state]
+  [:button.square
+   {:value n
+    :state @state
+      :on-click #(reset! state "X")}
+   @state])
+
+(defn new-state []
+  (r/atom ""))
 
 (defn board-row [start]
   [:div.board-row
-   [square start]
-   [square (+ start 1)]
-   [square (+ start 2)]
-   ])
+   [square start (new-state)]
+   [square (+ start 1) (new-state)]
+   [square (+ start 2) (new-state)]])
 
 (defn board []
   [:div
