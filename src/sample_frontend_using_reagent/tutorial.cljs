@@ -5,8 +5,7 @@
 (defn square [n state]
   [:button.square
    {:value n
-    :state @state
-      :on-click #(reset! state "X")}
+    :on-click #(reset! state "X")}
    @state])
 
 (defn new-state []
