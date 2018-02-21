@@ -3,27 +3,26 @@
       [reagent.core :as r]))
 
 (defn square [n state]
-  [:button.square
-   {:value n
-    :on-click #(reset! state "X")}
-   @state])
+  (let [s (state n)]
+    [:button.square
+     {:value n
+      :on-click #(reset! s "X")}
+     @s]))
 
-(defn new-state []
-  (r/atom ""))
-
-(defn board-row [start]
+(defn board-row [start state]
   [:div.board-row
-   [square start (new-state)]
-   [square (+ start 1) (new-state)]
-   [square (+ start 2) (new-state)]])
+   [square start state]
+   [square (+ start 1) state]
+   [square (+ start 2) state]])
 
 (defn board []
-  [:div
-   [:div.status "status"]
-   [board-row 0]
-   [board-row 3]
-   [board-row 6]]
-  )
+  (let [state (vec (map #(r/atom "") (range 9)))
+        status (r/atom "Next Player: X")]
+    [:div
+     [:div.status @status]
+     [board-row 0 state]
+     [board-row 3 state]
+     [board-row 6 state]]))
 
 (defn game []
   [:div.game
