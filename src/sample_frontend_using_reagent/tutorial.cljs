@@ -2,10 +2,10 @@
     (:require
       [reagent.core :as r]))
 
-(defn square [n state]
-  (let [s (state n)]
+(defn square [i state]
+  (let [s (state i)]
     [:button.square
-     {:value n
+     {:value i
       :on-click #(reset! s "X")}
      @s]))
 
