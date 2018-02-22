@@ -9,19 +9,23 @@
      {:value i
       :on-click
       (fn [e]
-
         (reset! s (if is-x? "X" "O"))
         (reset! (board-info :is-x-next?)
                 (not is-x?)))}
      @s]))
+
+(defn next-player [board-info]
+  [:div.status
+   "Next Player:"
+   [:span.name
+    (if (deref (board-info :is-x-next?)) "X" "O")]])
 
 (defn board []
   (let [board-info
         {:board (vec (map #(r/atom "") (range 9)))
          :is-x-next? (r/atom true)}]
     [:div
-     [:div.status
-      "TODO: show status"]
+     [next-player board-info]
      (for [r (range 0 9 3)]
        ^{:key (str "row" r)}
        [:div.row
