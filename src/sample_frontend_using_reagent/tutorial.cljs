@@ -41,3 +41,7 @@
     [:div "status"]
     [:ol
      ^{:key 1} [:li "todo"]]]])
+
+;; TODO: show the winner of a game
+;; TODO: store a history
+;; TODO: showing moves
