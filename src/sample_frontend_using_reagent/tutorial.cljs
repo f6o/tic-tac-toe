@@ -43,11 +43,13 @@
    [:span.name
     (if (deref (board-info :is-x-next?)) "X" "O")]])
 
+(defn create-new-board []
+  {:board (vec (map #(r/atom "") (range 9)))
+   :done (r/atom false)
+   :is-x-next? (r/atom true)})
+
 (defn board []
-  (let [board-info
-        {:board (vec (map #(r/atom "") (range 9)))
-         :done (r/atom false)
-         :is-x-next? (r/atom true)}]
+  (let [board-info (create-new-board)]
     [:div
      [next-player board-info]
      (for [r (range 0 9 3)]
