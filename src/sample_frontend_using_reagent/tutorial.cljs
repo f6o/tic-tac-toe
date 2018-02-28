@@ -2,6 +2,10 @@
     (:require
       [reagent.core :as r]))
 
+
+(defn board-filled? [board]
+  (every? #(re-matches #"[OX]" (deref %)) board))
+
 (defn decide-board-winner [board]
   (some (fn [line]
           (every? (fn [i]
@@ -26,13 +30,14 @@
      {:value i
       :on-click
       (fn [e]
-        (if (not (deref (board-info :done)))
-          (reset! s (if is-x? "X" "O")))
-        (if (or
-             (deref (board-info :done))
-             (decide-board-winner (board-info :board)))
-          (reset! (board-info :done) true)
-          (reset! (board-info :is-x-next?) (not is-x?))))}
+        (when (not (board-filled? (board-info :board)))
+          (if (not (deref (board-info :done)))
+            (reset! s (if is-x? "X" "O")))
+          (if (or
+               (deref (board-info :done))
+               (decide-board-winner (board-info :board)))
+            (reset! (board-info :done) true)
+            (reset! (board-info :is-x-next?) (not is-x?)))))}
      @s]))
 
 (defn next-player [board-info]
@@ -68,6 +73,7 @@
     [:ol
      ^{:key 1} [:li "todo"]]]])
 
+;; TODO: show message when the game is draw
 ;; TODO: show the winner of a game
 ;; TODO: store a history
 ;; TODO: showing moves
