@@ -26,7 +26,8 @@
      {:value i
       :on-click
       (fn [e]
-        (reset! s (if is-x? "X" "O"))
+        (if (not (deref (board-info :done)))
+          (reset! s (if is-x? "X" "O")))
         (if (or
              (deref (board-info :done))
              (decide-board-winner (board-info :board)))
