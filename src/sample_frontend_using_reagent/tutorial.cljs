@@ -40,6 +40,8 @@
             (reset! (board-info :is-x-next?) (not is-x?)))))}
      @s]))
 
+;; TODO: change this into show-status function
+;; then show message when drawing
 (defn next-player [board-info]
   [:div.status
    (if (deref (board-info :done))
@@ -48,8 +50,20 @@
    [:span.name
     (if (deref (board-info :is-x-next?)) "X" "O")]])
 
+(defn empty-board []
+  (vec (map #(r/atom "") (range 9))))
+
+(defn draw-board []
+  (vec
+   (map
+    #(r/atom %)
+    (list
+     "O" "X" "O"
+     "O" "X" "X"
+     "X" "O" ""))))
+
 (defn create-new-board []
-  {:board (vec (map #(r/atom "") (range 9)))
+  {:board (draw-board)
    :done (r/atom false)
    :is-x-next? (r/atom true)})
 
@@ -73,7 +87,5 @@
     [:ol
      ^{:key 1} [:li "todo"]]]])
 
-;; TODO: show message when the game is draw
-;; TODO: show the winner of a game
 ;; TODO: store a history
 ;; TODO: showing moves
