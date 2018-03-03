@@ -1,3 +1,14 @@
+# tic tac toe (Reagent ver)
+
+done with "[Tutorial: Into To React](https://reactjs.org/tutorial/tutorial.html)" using Reagent (ClojureScript)
+
+### FYI
+
+* [Reagent](http://reagent-project.github.io/)
+* [reagent.core](http://reagent-project.github.io/docs/master/reagent.core.html)
+* [ClojureStcript Cheatsheet](http://cljs.info/cheatsheet/)
+
+## Demo
 
 ### Development mode
 
