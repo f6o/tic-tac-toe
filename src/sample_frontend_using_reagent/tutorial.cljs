@@ -99,7 +99,7 @@
         [:a
          {:href "javascript:void(0);"
           :on-click (fn [e]
-                      (update-board-info board-info h)
-                      )} i]])]]])
+                      (reset! board-history (subvec @board-history 0 i))
+                      (update-board-info board-info h))} i]])]]])
 
 ;; TODO: showing moves
