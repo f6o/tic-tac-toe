@@ -99,6 +99,9 @@
          {:href "javascript:void(0);"
           :on-click (fn [e]
                       (reset! board-history (subvec @board-history 0 i))
-                      (update-board-info board-info h))} i]])]]])
+                      (update-board-info board-info h))}
+         (if (= i 0)
+           "Game Start"
+           (str "Move #" i))]])]]])
 
 ;; TODO: showing moves
