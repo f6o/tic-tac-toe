@@ -26,11 +26,14 @@
      (board-filled? (new-info :board)) :draw
      :else :in-play)))
 
-(defn click-square [s board-info]
+(defn click-square [s board-info board-history]
   (let [is-x? (deref (board-info :is-x-next?))
         result (deref (board-info :result))]
     (when (and (clojure.string/blank? @s)
                (= result :in-play))
+      (swap! board-history
+             conj
+             (vec (map #(deref %) (board-info :board))))
       (reset! s (if is-x? "X" "O"))
       (reset! (board-info :is-x-next?) (not is-x?))
       (update-board-status board-info board-info))))
@@ -39,11 +42,7 @@
   (let [s ((board-info :board) i)]
     [:button.square
      {:value i
-      :on-click (fn [e]
-                  (swap! board-history
-                         conj
-                         (vec (map #(deref %) (board-info :board))))
-                  (click-square s board-info))}
+      :on-click #(click-square s board-info board-history)}
      @s]))
 
 (defn empty-board []
