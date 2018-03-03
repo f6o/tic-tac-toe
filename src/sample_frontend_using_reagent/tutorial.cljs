@@ -2,7 +2,6 @@
     (:require
       [reagent.core :as r]))
 
-
 (defn board-filled? [board]
   (every? #(re-matches #"[OX]" (deref %)) board))
 
@@ -40,16 +39,6 @@
             (reset! (board-info :is-x-next?) (not is-x?)))))}
      @s]))
 
-;; TODO: change this into show-status function
-;; then show message when drawing
-(defn next-player [board-info]
-  [:div.status
-   (if (deref (board-info :done))
-     "Winner:"
-     "Next Player:")
-   [:span.name
-    (if (deref (board-info :is-x-next?)) "X" "O")]])
-
 (defn empty-board []
   (vec (map #(r/atom "") (range 9))))
 
@@ -63,14 +52,23 @@
      "X" "O" ""))))
 
 (defn create-new-board []
-  {:board (draw-board)
+  {:board (empty-board)
    :done (r/atom false)
    :is-x-next? (r/atom true)})
+
+(defn show-player [board-info]
+  (if (deref (board-info :is-x-next?)) "X" "O"))
+
+(defn show-status [board-info]
+  [:div.status
+   (cond (board-filled? (board-info :board)) "Draw Game"
+         (deref (board-info :done)) (str "Winner:" (show-player board-info))
+         :else (str  "Next Player:" (show-player board-info)))])
 
 (defn board []
   (let [board-info (create-new-board)]
     [:div
-     [next-player board-info]
+     [show-status board-info]
      (for [r (range 0 9 3)]
        ^{:key (str "row" r)}
        [:div.row
