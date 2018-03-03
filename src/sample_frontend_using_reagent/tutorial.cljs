@@ -18,26 +18,32 @@
      (0 3 6) (1 4 7) (2 5 8)
      (0 4 8) (2 4 6))))
 
+(defn update-board-status [board-info new-info]
+  (reset!
+   (board-info :result)
+   (cond
+     (won? (new-info :board)) :done
+     (board-filled? (new-info :board)) :draw
+     :else :in-play)))
+
 (defn click-square [s board-info]
   (let [is-x? (deref (board-info :is-x-next?))
         result (deref (board-info :result))]
-    (js/console.log (clj->js board-info))
     (when (and (clojure.string/blank? @s)
                (= result :in-play))
       (reset! s (if is-x? "X" "O"))
       (reset! (board-info :is-x-next?) (not is-x?))
-      (reset!
-       (board-info :result)
-       (cond
-         (won? (board-info :board)) :done
-         (board-filled? (board-info :board)) :draw
-         :else :in-play)))))
+      (update-board-status board-info board-info))))
 
-(defn square [i board-info]
+(defn square [i board-info board-history]
   (let [s ((board-info :board) i)]
     [:button.square
      {:value i
-      :on-click #(click-square s board-info)}
+      :on-click (fn [e]
+                  (swap! board-history
+                         conj
+                         (vec (map #(deref %) (board-info :board))))
+                  (click-square s board-info))}
      @s]))
 
 (defn empty-board []
@@ -64,24 +70,36 @@
      :draw "Draw Game"
      (str "Next Player: " (if (deref (board-info :is-x-next?)) "X" "O")))])
 
-(defn board []
-  (let [board-info (create-new-board)]
-    [:div
-     [show-status board-info]
-     (for [r (range 0 9 3)]
-       ^{:key (str "row" r)}
-       [:div.row
-        [square r board-info]
-        [square (+ r 1) board-info]
-        [square (+ r 2) board-info]])]))
+(defn update-board-info [current-board-info new-layout]
+  (doseq [[o n] (map list
+                     (current-board-info :board)
+                     new-layout)]
+    (reset! o n))
+  (reset! (current-board-info :is-x-next?)
+          (=  (count (filter #(= "X" %) new-layout))
+              (count (filter #(= "O" %) new-layout))))
+  (update-board-status current-board-info current-board-info))
 
-(defn game []
+(defn game [board-info board-history]
   [:div.game
-   [:div.game-board [board]]
-   [:div.gameinfo
-    [:div "status"]
-    [:ol
-     ^{:key 1} [:li "todo"]]]])
+   [:div.game-board
+    [show-status board-info]
+    (for [r (range 0 9 3)]
+      ^{:key (str "row" r)}
+      [:div.board-row
+       (for [c (range r (+ r 3))]
+         ^{:key (str "cell" c)}
+         [square c board-info board-history])])]
+   [:div.game-info
+    [:h4 "History"]
+    [:ol.history
+     (for [[i h] (map-indexed vector @board-history)]
+       ^{:key i}
+       [:li
+        [:a
+         {:href "javascript:void(0);"
+          :on-click (fn [e]
+                      (update-board-info board-info h)
+                      )} i]])]]])
 
-;; TODO: store a history
 ;; TODO: showing moves
