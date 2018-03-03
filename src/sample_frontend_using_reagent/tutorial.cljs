@@ -3,81 +3,67 @@
       [reagent.core :as r]))
 
 (defn board-filled? [board]
-  (every? #(re-matches #"[OX]" (deref %)) board))
+  (every? #(re-matches #"[OX]" %) board))
 
 (defn won? [board]
   (some
    (fn [line]
      (every? (fn [i]
                (and
-                (not (clojure.string/blank? (deref (board i))))
-                (= (deref (board i))
-                   (deref (board (first line))))))
+                (not (clojure.string/blank? (board i)))
+                (= (board i) (board (first line)))))
              (rest line)))
    '((0 1 2) (3 4 5) (6 7 8)
      (0 3 6) (1 4 7) (2 5 8)
      (0 4 8) (2 4 6))))
 
-(defn update-board-status [board-info new-info]
-  (reset!
-   (board-info :result)
+(defn update-board-result [board-info]
+  (swap!
+   board-info assoc :result
    (cond
-     (won? (new-info :board)) :done
-     (board-filled? (new-info :board)) :draw
+     (won? (@board-info :board)) :done
+     (board-filled? (@board-info :board)) :draw
      :else :in-play)))
 
-(defn click-square [s board-info board-history]
-  (let [is-x? (deref (board-info :is-x-next?))
-        result (deref (board-info :result))]
-    (when (and (clojure.string/blank? @s)
-               (= result :in-play))
-      (swap! board-history
-             conj
-             (vec (map #(deref %) (board-info :board))))
-      (reset! s (if is-x? "X" "O"))
-      (reset! (board-info :is-x-next?) (not is-x?))
-      (update-board-status board-info board-info))))
+(defn click-square [i board-info board-history]
+  (let [is-x? (@board-info :is-x-next?)
+        current-board (@board-info :board)]
+    (when (and (clojure.string/blank? ((@board-info :board) i))
+               (= (@board-info :result) :in-play))
+      (swap! board-history conj current-board)
+      (swap! board-info assoc :board
+             (assoc current-board i (if is-x? "X" "O")))
+      (swap! board-info assoc :is-x-next? (not is-x?))
+      (update-board-result board-info))))
 
 (defn square [i board-info board-history]
-  (let [s ((board-info :board) i)]
-    [:button.square
-     {:value i
-      :on-click #(click-square s board-info board-history)}
-     @s]))
-
-(defn empty-board []
-  (vec (map #(r/atom "") (range 9))))
-
-(defn draw-board []
-  (vec
-   (map #(r/atom %)
-        (list
-         "O" "X" "O"
-         "O" "X" "X"
-         "X" "O" ""))))
+  [:button.square
+   {:value i
+    :on-click #(click-square i board-info board-history)}
+   ((@board-info :board) i)])
 
 (defn create-new-board []
-  {:board (empty-board)
-   :result (r/atom :in-play)
-   :is-x-next? (r/atom true)})
+  (r/atom
+   {:board (vec (repeat 9 ""))
+    :result :in-play
+    :is-x-next? true}))
 
 (defn show-status [board-info]
   [:div.status
-   (case (deref (board-info :result))
+   (case (@board-info :result)
      :done (str "Winner:"
-                (if (deref (board-info :is-x-next?)) "O" "X"))
+                (if (@board-info :is-x-next?) "O" "X"))
      :draw "Draw Game"
-     (str "Next Player: " (if (deref (board-info :is-x-next?)) "X" "O")))])
+     :in-play (str "Next Player: "
+                   (if (@board-info :is-x-next?) "X" "O")))])
 
 (defn update-board-info [current-board-info new-layout]
-  (doseq [[o n] (map list
-                     (current-board-info :board)
-                     new-layout)]
-    (reset! o n))
-  (reset! (current-board-info :is-x-next?)
-          (=  (count (filter #(= "X" %) new-layout))
-              (count (filter #(= "O" %) new-layout))))
-  (update-board-status current-board-info current-board-info))
+  (swap! current-board-info assoc :board new-layout)
+  (swap! current-board-info assoc
+         :is-x-next?
+          (= (count (filter #(= "X" %) new-layout))
+             (count (filter #(= "O" %) new-layout))))
+  (update-board-result current-board-info))
 
 (defn game [board-info board-history]
   [:div.game
@@ -103,5 +89,3 @@
          (if (= i 0)
            "Game Start"
            (str "Move #" i))]])]]])
-
-;; TODO: showing moves
