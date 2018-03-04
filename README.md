@@ -10,6 +10,8 @@ done with "[Tutorial: Into To React](https://reactjs.org/tutorial/tutorial.html)
 
 ## Demo
 
+https://f6o.github.io/tick/
+
 ### Development mode
 
 To start the Figwheel compiler, navigate to the project folder and run the following command in the terminal:
