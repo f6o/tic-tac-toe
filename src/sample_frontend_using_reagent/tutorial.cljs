@@ -5,7 +5,7 @@
 (defn board-filled? [board]
   (every? #(re-matches #"[OX]" %) board))
 
-(defn won? [board]
+(defn culculate-winner [board]
   (some
    (fn [line]
      (every? (fn [i]
@@ -17,75 +17,75 @@
      (0 3 6) (1 4 7) (2 5 8)
      (0 4 8) (2 4 6))))
 
-(defn update-board-result [board-info]
+(defn update-board-result [state]
   (swap!
-   board-info assoc :result
+   state assoc :result
    (cond
-     (won? (@board-info :board)) :done
-     (board-filled? (@board-info :board)) :draw
+     (culculate-winner (@state :squares)) :done
+     (board-filled? (@state :squares)) :draw
      :else :in-play)))
 
-(defn click-square [i board-info board-history]
-  (let [is-x? (@board-info :is-x-next?)
-        current-board (@board-info :board)]
-    (when (and (clojure.string/blank? ((@board-info :board) i))
-               (= (@board-info :result) :in-play))
+(defn click-square [i state board-history]
+  (let [is-x? (@state :is-x-next?)
+        current-board (@state :squares)]
+    (when (and (clojure.string/blank? ((@state :squares) i))
+               (= (@state :result) :in-play))
       (swap! board-history conj current-board)
-      (swap! board-info assoc :board
+      (swap! state assoc :squares
              (assoc current-board i (if is-x? "X" "O")))
-      (swap! board-info assoc :is-x-next? (not is-x?))
-      (update-board-result board-info))))
+      (swap! state assoc :is-x-next? (not is-x?))
+      (update-board-result state))))
 
-(defn square [i board-info board-history]
+(defn square [i state board-history]
   [:button.square
    {:value i
-    :on-click #(click-square i board-info board-history)}
-   ((@board-info :board) i)])
+    :on-click #(click-square i state board-history)}
+   ((@state :squares) i)])
 
-(defn create-new-board []
+(defn create-new-state []
   (r/atom
-   {:board (vec (repeat 9 ""))
+   {:squares (vec (repeat 9 ""))
     :result :in-play
     :is-x-next? true}))
 
-(defn show-status [board-info]
+(defn show-status [state]
   [:div.status
-   (case (@board-info :result)
+   (case (@state :result)
      :done (str "Winner:"
-                (if (@board-info :is-x-next?) "O" "X"))
+                (if (@state :is-x-next?) "O" "X"))
      :draw "Draw Game"
      :in-play (str "Next Player: "
-                   (if (@board-info :is-x-next?) "X" "O")))])
+                   (if (@state :is-x-next?) "X" "O")))])
 
-(defn update-board-info [current-board-info new-layout]
-  (swap! current-board-info assoc :board new-layout)
-  (swap! current-board-info assoc
+(defn update-state [current-state new-layout]
+  (swap! current-state assoc :squares new-layout)
+  (swap! current-state assoc
          :is-x-next?
           (= (count (filter #(= "X" %) new-layout))
              (count (filter #(= "O" %) new-layout))))
-  (update-board-result current-board-info))
+  (update-board-result current-state))
 
-(defn game [board-info board-history]
+(defn game [state board-history]
   [:div.game
    [:div.game-board
-    [show-status board-info]
+    [show-status state]
     (for [r (range 0 9 3)]
       ^{:key (str "row" r)}
       [:div.board-row
        (for [c (range r (+ r 3))]
          ^{:key (str "cell" c)}
-         [square c board-info board-history])])]
+         [square c state board-history])])]
    [:div.game-info
     [:h4 "History"]
     [:ol.history
      (for [[i h] (map-indexed vector @board-history)]
        ^{:key i}
        [:li
-        [:a
-         {:href "javascript:void(0);"
-          :on-click (fn [e]
+        [:button
+         {:on-click (fn [e]
                       (reset! board-history (subvec @board-history 0 i))
-                      (update-board-info board-info h))}
-         (if (= i 0)
-           "Game Start"
-           (str "Move #" i))]])]]])
+                      (update-state state h))}
+         (str "Go to "
+              (if (= i 0)
+                "game start"
+                (str "move #" i)))]])]]])

@@ -46,7 +46,7 @@
 
 (defn mount-root []
   (r/render
-   [tut/game (tut/create-new-board) (r/atom [])]
+   [tut/game (tut/create-new-state) (r/atom [])]
    (.getElementById js/document "app")))
 
 (defn init! []
